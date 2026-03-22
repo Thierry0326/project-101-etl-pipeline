@@ -1,0 +1,37 @@
+# ============================================
+# PROJECT 101 - ETL PIPELINE
+# Python Dependencies
+# ============================================
+
+# Data Manipulation & Processing
+pandas==2.2.0
+numpy==1.26.4
+
+# Database Connectors
+sqlalchemy==2.0.25
+pymssql==2.2.11
+mysql-connector-python==8.3.0
+pyodbc==5.1.0
+
+# Data Validation
+great-expectations==0.18.8
+
+# Pipeline Orchestration
+apache-airflow==2.8.1
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Data Source (CSV handling)
+openpyxl==3.1.2
+
+# Testing
+pytest==7.4.4
+pytest-cov==4.1.0
+
+# Logging & Monitoring
+loguru==0.7.2
+
+# Utilities
+tqdm==4.66.1
+colorama==0.4.6
