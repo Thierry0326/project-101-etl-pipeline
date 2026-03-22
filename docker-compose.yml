@@ -1,0 +1,92 @@
+version: "3.8"
+
+services:
+  # ============================================
+  # SQL SERVER - Raw/Staging Database
+  # ============================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: project101_sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - project101_network
+    restart: unless-stopped
+
+  # ============================================
+  # MYSQL - Processed/Analytics Database
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: project101_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - project101_network
+    restart: unless-stopped
+
+  # ============================================
+  # GRAFANA - Monitoring Dashboard
+  # ============================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: project101_grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - project101_network
+    restart: unless-stopped
+
+  # ============================================
+  # AIRFLOW - Pipeline Orchestration
+  # ============================================
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: project101_airflow
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+    networks:
+      - project101_network
+    restart: unless-stopped
+    command: bash -c "airflow db init && airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@project101.com && airflow webserver & airflow scheduler"
+
+# ============================================
+# VOLUMES - Persistent Data Storage
+# ============================================
+volumes:
+  sqlserver_data:
+  mysql_data:
+  grafana_data:
+  airflow_logs:
+
+# ============================================
+# NETWORK - All containers talk to each other
+# ============================================
+networks:
+  project101_network:
+    driver: bridge
