@@ -4,6 +4,11 @@
 # Schedule: Daily at midnight
 # ============================================
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -21,7 +26,7 @@ default_args = {
     'owner'             : 'project101',
     'depends_on_past'   : False,
     'start_date'        : days_ago(1),
-    'email'             : ['your-email@gmail.com'],
+    'email'             : ['AIRFLOW_ALERT_EMAIL', ''],  # Set in .env
     'email_on_failure'  : True,     # Email if task fails
     'email_on_retry'    : False,
     'retries'           : 2,        # Retry failed tasks twice
