@@ -4,14 +4,14 @@ Local ETL Pipeline using Python, SQL Server, MySQL, Airflow, Grafana and Power B
 
 # 🚀 Project 101 — Local ETL Pipeline
 
-![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-red?logo=microsoftsqlserver)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)
-![Apache Airflow](https://img.shields.io/badge/Airflow-2.8.1-green?logo=apacheairflow)
-![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)
-![Grafana](https://img.shields.io/badge/Grafana-Monitoring-orange?logo=grafana)
-![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-yellow?logo=powerbi)
-![GitHub](https://img.shields.io/badge/GitHub-Version%20Control-black?logo=github)
+[![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://www.python.org/)
+[![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-red?logo=microsoftsqlserver)](https://www.microsoft.com/sql-server)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)](https://www.mysql.com/)
+[![Apache Airflow](https://img.shields.io/badge/Airflow-2.8.1-green?logo=apacheairflow)](https://airflow.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)](https://www.docker.com/)
+[![Grafana](https://img.shields.io/badge/Grafana-Monitoring-orange?logo=grafana)](https://grafana.com/)
+[![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-yellow?logo=powerbi)](https://powerbi.microsoft.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Version%20Control-black?logo=github)](https://github.com/Thierry0326/project-101-etl-pipeline)
 
 ---
 
@@ -321,6 +321,7 @@ Password: (from your .env file)
 **Thierry** — Database Administrator transitioning to Cloud Data Engineer
 
 [![GitHub](https://img.shields.io/badge/GitHub-Thierry0326-black?logo=github)](https://github.com/Thierry0326)
+[![Tests](https://github.com/Thierry0326/project-101-etl-pipeline/actions/workflows/tests.yml/badge.svg)](https://github.com/Thierry0326/project-101-etl-pipeline/actions)
 
 ---
 
