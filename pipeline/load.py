@@ -9,7 +9,7 @@ import os
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
-import sqlalchemy as sa
+# import sqlalchemy as sa
 from sqlalchemy import create_engine, text
 
 # Load environment variables

@@ -171,17 +171,23 @@ class TestExtract:
 
     def test_validate_data_passes_with_good_data(self, sample_raw_df):
         """Valid DataFrame should pass validation."""
+        import os
+        os.makedirs('logs', exist_ok=True)
         from extract import validate_extracted_data
         assert validate_extracted_data(sample_raw_df) == True
 
     def test_validate_data_fails_with_empty_df(self):
         """Empty DataFrame should fail validation."""
+        import os
+        os.makedirs('logs', exist_ok=True)
         from extract import validate_extracted_data
         empty_df = pd.DataFrame()
         assert validate_extracted_data(empty_df) == False
 
     def test_validate_data_fails_with_missing_columns(self):
         """DataFrame missing key columns should fail."""
+        import os
+        os.makedirs('logs', exist_ok=True)
         from extract import validate_extracted_data
         bad_df = pd.DataFrame({'random_col': [1, 2, 3]})
         assert validate_extracted_data(bad_df) == False
@@ -194,6 +200,8 @@ class TestExtract:
 
     def test_check_file_exists_returns_false_for_missing_file(self):
         """Should return False for non-existent file."""
+        import os
+        os.makedirs('logs', exist_ok=True)
         from extract import check_file_exists
         assert check_file_exists('non_existent_file.csv') == False
 

@@ -6,7 +6,7 @@
 # ============================================
 
 import pandas as pd
-import numpy as np
+# import numpy as np
 import os
 import json
 import logging
@@ -190,7 +190,7 @@ def clean_years_coding(value) -> int:
     # Try converting to number
     try:
         return int(float(value))
-    except:
+    except (ValueError, TypeError):
         return None
 
 
