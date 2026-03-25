@@ -158,9 +158,9 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     # Replace NaN with None (SQL NULL)
     df_prepared = df_prepared.where(pd.notnull(df_prepared), None)
 
-    logger.info(f"✅ DataFrame prepared!")
-    logger.info(f"📊 Rows to load: {len(df_prepared):,}")
-    logger.info(f"📊 Columns mapped: {len(df_prepared.columns)}")
+    logger.info("✅ DataFrame prepared!")
+    logger.info("📊 Rows to load: {len(df_prepared):,}")
+    logger.info("📊 Columns mapped: {len(df_prepared.columns)}")
 
     return df_prepared
 
@@ -180,10 +180,10 @@ def load_to_sqlserver(df: pd.DataFrame, engine) -> bool:
     failed_rows  = 0
     total_batches = (total_rows // BATCH_SIZE) + 1
 
-    logger.info(f"🚀 Starting load to SQL Server...")
-    logger.info(f"📊 Total rows    : {total_rows:,}")
-    logger.info(f"📦 Batch size    : {BATCH_SIZE:,}")
-    logger.info(f"📦 Total batches : {total_batches:,}")
+    logger.info("🚀 Starting load to SQL Server...")
+    logger.info("📊 Total rows    : {total_rows:,}")
+    logger.info("📦 Batch size    : {BATCH_SIZE:,}")
+    logger.info("📦 Total batches : {total_batches:,}")
 
     try:
         # Split DataFrame into batches
@@ -223,10 +223,10 @@ def load_to_sqlserver(df: pd.DataFrame, engine) -> bool:
 
         # Final summary
         logger.info("=" * 50)
-        logger.info(f"✅ Load complete!")
-        logger.info(f"📊 Successfully loaded : {loaded_rows:,} rows")
-        logger.info(f"📊 Failed rows         : {failed_rows:,}")
-        logger.info(f"📊 Success rate        : {(loaded_rows/total_rows*100):.1f}%")
+        logger.info("✅ Load complete!")
+        logger.info("📊 Successfully loaded : {loaded_rows:,} rows")
+        logger.info("📊 Failed rows         : {failed_rows:,}")
+        logger.info("📊 Success rate        : {(loaded_rows/total_rows*100):.1f}%")
         logger.info("=" * 50)
 
         return True
