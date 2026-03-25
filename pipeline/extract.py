@@ -36,7 +36,8 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION
 # ============================================
 # Stack Overflow 2020 Survey - Direct download URL
-SURVEY_URL    = "https://info.stackoverflowsolutions.com/rs/719-EMH-566/images/stack-overflow-developer-survey-2020.zip"
+SURVEY_URL    = "https://info.stackoverflowsolutions.com/rs/719-EMH-566" \
+                "/images/stack-overflow-developer-survey-2020.zip"
 RAW_DATA_PATH = "data/raw/survey_results_public.csv"
 SCHEMA_PATH   = "data/raw/survey_results_schema.csv"
 ZIP_PATH      = "data/raw/survey_2020.zip"
@@ -144,7 +145,7 @@ def download_survey_data() -> bool:
                 size = f.write(chunk)
                 progress.update(size)
 
-        logger.info(f"✅ Download complete!")
+        logger.info("✅ Download complete!")
         extract_zip()
         return True
 
@@ -201,7 +202,7 @@ def extract_survey_data(filepath: str) -> pd.DataFrame:
             low_memory=False
         )
 
-        logger.info(f"✅ Data loaded into memory!")
+        logger.info("✅ Data loaded into memory!")
         logger.info(f"📊 Rows:    {len(df):,}")
         logger.info(f"📊 Columns: {len(df.columns)}")
         logger.info(f"📊 Memory:  {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
