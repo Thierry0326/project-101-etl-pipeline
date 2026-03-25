@@ -168,3 +168,6 @@ CREATE INDEX idx_fact_compensation ON fact_survey_responses(compensation_key);
 CREATE INDEX idx_dim_country ON dim_geography(country);
 CREATE INDEX idx_dim_tech ON dim_technology(tech_name);
 CREATE INDEX idx_dim_comp ON dim_compensation(comp_total_usd);
+
+-- Airflow metadata database
+CREATE DATABASE IF NOT EXISTS airflow_metadata;

@@ -56,24 +56,45 @@ services:
 
   # ============================================
   # AIRFLOW - Pipeline Orchestration
+  # Uses custom image with our dependencies
   # ============================================
   airflow:
-    image: apache/airflow:2.8.1
+    build: . # Build from our Dockerfile
     container_name: project101_airflow
+    depends_on:
+      - mysql # Wait for MySQL to start first
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://
+        ${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
     ports:
       - "8080:8080"
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags # Our DAG files
+      - ./pipeline:/opt/airflow/pipeline # Our pipeline scripts
+      - ./logs:/opt/airflow/logs # Shared logs folder
       - airflow_logs:/opt/airflow/logs
     networks:
       - project101_network
     restart: unless-stopped
-    command: bash -c "airflow db init && airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@project101.com && airflow webserver & airflow scheduler"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: bash -c "
+      airflow db init &&
+      airflow users create
+      --username admin
+      --password ${AIRFLOW_ADMIN_PASSWORD}
+      --firstname Admin
+      --lastname User
+      --role Admin
+      --email ${AIRFLOW_ALERT_EMAIL} &&
+      airflow webserver &
+      airflow scheduler"
 
 # ============================================
 # VOLUMES - Persistent Data Storage
