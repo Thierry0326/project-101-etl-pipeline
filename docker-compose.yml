@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 
 services:
   # ============================================
@@ -65,8 +65,7 @@ services:
       - mysql # Wait for MySQL to start first
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://
-        ${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
     ports:
