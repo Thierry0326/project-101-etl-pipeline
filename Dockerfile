@@ -50,3 +50,16 @@ RUN pip install --no-cache-dir \
     requests \
     tqdm==4.66.1 \
     loguru==0.7.2
+
+
+    RUN pip install --no-cache-dir \
+    "sqlalchemy==1.4.50" \
+    "pandas==2.0.3" \
+    numpy \
+    pymssql==2.2.11 \
+    mysql-connector-python==8.3.0 \
+    PyMySQL \
+    python-dotenv==1.0.0 \
+    requests \
+    tqdm==4.66.1 \
+    loguru==0.7.2

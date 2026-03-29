@@ -37,6 +37,22 @@ services:
     networks:
       - project101_network
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # ============================================
   # GRAFANA - Monitoring Dashboard
@@ -59,31 +75,29 @@ services:
   # Uses custom image with our dependencies
   # ============================================
   airflow:
-    build: . # Build from our Dockerfile
+    build: .
     container_name: project101_airflow
     depends_on:
-      - mysql # Wait for MySQL to start first
+      mysql:
+        condition: service_healthy
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
+      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_SECRET_KEY}
     ports:
       - "8080:8080"
     volumes:
-      - ./dags:/opt/airflow/dags # Our DAG files
-      - ./pipeline:/opt/airflow/pipeline # Our pipeline scripts
-      - ./logs:/opt/airflow/logs # Shared logs folder
+      - ./dags:/opt/airflow/dags
+      - ./pipeline:/opt/airflow/pipeline
+      - ./logs:/opt/airflow/logs
       - airflow_logs:/opt/airflow/logs
     networks:
       - project101_network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     command: bash -c "
+      pip install PyMySQL &&
       airflow db init &&
       airflow users create
       --username admin
