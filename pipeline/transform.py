@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ============================================
 # CONFIGURATION
 # ============================================
-MSSQL_SERVER   = os.getenv('MSSQL_SERVER', 'localhost,1434')
+MSSQL_SERVER = os.getenv('MSSQL_SERVER', 'project101_sqlserver,1433')
 MSSQL_PASSWORD = os.getenv('MSSQL_SA_PASSWORD')
 MSSQL_DATABASE = 'stackoverflow_raw'
 
