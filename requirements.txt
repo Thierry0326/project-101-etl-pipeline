@@ -10,7 +10,7 @@ numpy>=1.26.0
 # Database Connectors
 sqlalchemy==2.0.25
 pymssql==2.2.11
-mysql-connector-python==8.3.0
+# mysql-connector-python==8.3.0
 pyodbc==5.1.0
 
 # Data Validation

@@ -82,7 +82,9 @@ services:
         condition: service_healthy
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
+      # - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+pymysql://project101_user:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata
+      # - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/airflow_metadata
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://root:Pro101Mysql123@mysql:3306/airflow_metadata
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
       - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_SECRET_KEY}

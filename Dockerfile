@@ -28,37 +28,10 @@ COPY requirements.txt .
 # This means Airflow DAGs can import pandas,
 # sqlalchemy, pymssql etc without issues!
 RUN pip install --no-cache-dir \
-    pandas==2.0.3 \
-    numpy \
-    sqlalchemy==2.0.25 \
-    pymssql==2.2.11 \
-    mysql-connector-python==8.3.0 \
-    python-dotenv==1.0.0 \
-    requests \
-    tqdm==4.66.1 \
-    loguru==0.7.2
-
-
-    RUN pip install --no-cache-dir \
-    pandas==2.0.3 \
-    numpy \
-    sqlalchemy==2.0.25 \
-    pymssql==2.2.11 \
-    mysql-connector-python==8.3.0 \
-    PyMySQL \
-    python-dotenv==1.0.0 \
-    requests \
-    tqdm==4.66.1 \
-    loguru==0.7.2
-
-
-    RUN pip install --no-cache-dir \
     "sqlalchemy==1.4.50" \
     "pandas==2.0.3" \
-    numpy \
-    pymssql==2.2.11 \
-    mysql-connector-python==8.3.0 \
     PyMySQL \
+    pymssql==2.2.11 \
     python-dotenv==1.0.0 \
     requests \
     tqdm==4.66.1 \
