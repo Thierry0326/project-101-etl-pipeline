@@ -33,7 +33,8 @@ logger = logging.getLogger(__name__)
 # ============================================
 # CONFIGURATION
 # ============================================
-MSSQL_SERVER = os.getenv('MSSQL_SERVER', 'project101_sqlserver,1433')
+MSSQL_SERVER   = os.getenv('MSSQL_HOST', 'project101_sqlserver')
+MSSQL_PORT     = os.getenv('MSSQL_PORT', '1433')
 MSSQL_DATABASE = 'stackoverflow_raw'
 MSSQL_USER     = 'sa'
 MSSQL_PASSWORD = os.getenv('MSSQL_SA_PASSWORD')
@@ -53,10 +54,9 @@ def get_mssql_connection():
 
     try:
         connection_string = (
-            f"mssql+pymssql://{MSSQL_USER}:{MSSQL_PASSWORD}"
-            f"@{MSSQL_SERVER}/{MSSQL_DATABASE}"
-        )
-
+    f"mssql+pymssql://{MSSQL_USER}:{MSSQL_PASSWORD}"
+    f"@{MSSQL_SERVER}:{MSSQL_PORT}/{MSSQL_DATABASE}"
+    )
         engine = create_engine(
             connection_string,
             echo=False,           # Set True to see SQL queries in logs
