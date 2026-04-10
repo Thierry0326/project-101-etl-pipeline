@@ -88,11 +88,20 @@ services:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
       - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_SECRET_KEY}
+      - MSSQL_SA_PASSWORD=Pro101mssql
+      - MSSQL_HOST=project101_sqlserver
+      - MSSQL_PORT=1433
+      - MSSQL_USER=sa
+      - MYSQL_HOST=project101_mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=project101_user
+      - MYSQL_PASSWORD=Pro101Mysql123
     ports:
       - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./pipeline:/opt/airflow/pipeline
+      - ./.env:/opt/airflow/.env
       - ./logs:/opt/airflow/logs
       - airflow_logs:/opt/airflow/logs
     networks:

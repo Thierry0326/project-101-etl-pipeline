@@ -15,7 +15,12 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 # Load environment variables
-load_dotenv()
+from pathlib import Path
+env_path = Path('/opt/airflow/.env')
+if env_path.exists():
+    load_dotenv(env_path)  # Docker container path
+else:
+    load_dotenv()  # Local development path
 
 # ============================================
 # LOGGING SETUP
