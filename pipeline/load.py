@@ -59,9 +59,9 @@ def get_mssql_connection():
 
     try:
         connection_string = (
-    f"mssql+pymssql://{MSSQL_USER}:{MSSQL_PASSWORD}"
-    f"@{MSSQL_SERVER}:{MSSQL_PORT}/{MSSQL_DATABASE}"
-    )
+            f"mssql+pymssql://{MSSQL_USER}:{MSSQL_PASSWORD}"
+            f"@{MSSQL_SERVER}:{MSSQL_PORT}/{MSSQL_DATABASE}"
+        )
         engine = create_engine(
             connection_string,
             echo=False,           # Set True to see SQL queries in logs
