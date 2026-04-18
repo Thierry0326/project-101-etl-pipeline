@@ -108,9 +108,8 @@ def load_dataframe(
     # Truncate table before loading
     if truncate_first:
         try:
-            with engine.connect() as conn:
+            with engine.begin() as conn:
                 conn.execute(text(f"TRUNCATE TABLE {table_name}"))
-                conn.commit()
             logger.info(f"🗑️  Truncated {table_name}")
         except Exception as e:
             logger.warning(f"⚠️ Could not truncate {table_name}: {str(e)}")

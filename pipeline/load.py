@@ -96,9 +96,8 @@ def truncate_staging_table(engine) -> bool:
     logger.info("🗑️  Truncating staging table...")
 
     try:
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             conn.execute(text("TRUNCATE TABLE dbo.survey_responses_raw"))
-            conn.commit()
 
         logger.info("✅ Staging table cleared!")
         return True
