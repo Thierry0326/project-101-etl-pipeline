@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/Docker/Docker/resources/bin/docker.exe\" ps --format \"table {{.Names}}\\\\t{{.Status}}\")"
+    ]
+  }
+}

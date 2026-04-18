@@ -80,6 +80,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      sqlserver:
+        condition: service_started
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       # - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+pymysql://project101_user:${MYSQL_PASSWORD}@mysql:3306/airflow_metadata

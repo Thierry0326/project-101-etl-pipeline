@@ -26,7 +26,7 @@ default_args = {
     'owner'             : 'project101',
     'depends_on_past'   : False,
     'start_date'        : days_ago(1),
-    'email'             : ['AIRFLOW_ALERT_EMAIL', ''],  # Set in .env
+    'email'             : [os.getenv('AIRFLOW_ALERT_EMAIL', '')],
     'email_on_failure'  : True,     # Email if task fails
     'email_on_retry'    : False,
     'retries'           : 2,        # Retry failed tasks twice
@@ -138,9 +138,11 @@ def task_validate_pipeline(**context):
     logger.info("🔍 Validating full pipeline...")
 
     # Check SQL Server
+    mssql_host = os.getenv('MSSQL_HOST', 'project101_sqlserver')
+    mssql_port = os.getenv('MSSQL_PORT', '1433')
     mssql_engine = create_engine(
         f"mssql+pymssql://sa:{os.getenv('MSSQL_SA_PASSWORD')}"
-        f"@{os.getenv('MSSQL_SERVER', 'localhost,1434')}/stackoverflow_raw"
+        f"@{mssql_host}:{mssql_port}/stackoverflow_raw"
     )
 
     with mssql_engine.connect() as conn:
@@ -149,9 +151,11 @@ def task_validate_pipeline(**context):
         ).scalar()
 
     # Check MySQL Silver
+    mysql_host = os.getenv('MYSQL_HOST', 'project101_mysql')
+    mysql_port = os.getenv('MYSQL_PORT', '3306')
     mysql_engine = create_engine(
         f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:"
-        f"{os.getenv('MYSQL_PASSWORD')}@localhost:3307"
+        f"{os.getenv('MYSQL_PASSWORD')}@{mysql_host}:{mysql_port}"
         f"/stackoverflow_processed"
     )
 

@@ -1,0 +1,140 @@
+============================================
+PROJECT 101 - ETL PIPELINE
+Change Log - 2026-04-18
+Author: Claude (assisted fix session)
+Context: Airflow DAG failing at load_to_sqlserver task
+============================================
+
+
+ROOT CAUSE (not a code change, but the main blocker)
+----------------------------------------------------
+The `stackoverflow_raw` database was never created inside the
+SQL Server container. docker-compose.yml spins up a fresh MSSQL
+instance but never runs sql/mssql_schema.sql against it.
+
+load.py connects straight to `stackoverflow_raw` and then runs
+`TRUNCATE TABLE dbo.survey_responses_raw`, which fails with:
+    "Cannot open database 'stackoverflow_raw' requested by
+     the login. The login failed."
+
+MANUAL STEP REQUIRED (run once, after containers are up):
+
+    docker cp sql/mssql_schema.sql project101_sqlserver:/tmp/mssql_schema.sql
+    docker exec -it project101_sqlserver /opt/mssql-tools/bin/sqlcmd \
+        -S localhost -U sa -P Pro101mssql -i /tmp/mssql_schema.sql
+
+If sqlcmd path errors, newer MSSQL images use:
+    /opt/mssql-tools18/bin/sqlcmd -C ...
+
+
+============================================
+CODE CHANGES APPLIED
+============================================
+
+1. pipeline/load.py
+   -----------------
+   Fixed 8 broken log messages that were missing the `f`
+   prefix on their format strings. Without `f`, `{variable}`
+   was printed literally instead of being interpolated.
+
+   Lines 167-168 (prepare_dataframe)
+       "📊 Rows to load: {len(df_prepared):,}"
+       "📊 Columns mapped: {len(df_prepared.columns)}"
+       -> added f-prefix on both.
+
+   Lines 189-191 (load_to_sqlserver - pre-loop summary)
+       "📊 Total rows    : {total_rows:,}"
+       "📦 Batch size    : {BATCH_SIZE:,}"
+       "📦 Total batches : {total_batches:,}"
+       -> added f-prefix on all three.
+
+   Lines 232-234 (load_to_sqlserver - final summary)
+       "📊 Successfully loaded : {loaded_rows:,} rows"
+       "📊 Failed rows         : {failed_rows:,}"
+       "📊 Success rate        : {(loaded_rows/total_rows*100):.1f}%"
+       -> added f-prefix on all three.
+
+   Impact: cosmetic / observability - logs now show real
+   numbers instead of literal placeholder text. No behavioural
+   change to the load itself.
+
+
+2. dags/etl_pipeline.py
+   --------------------
+   a) Line 29 - email default_args
+      Before:
+          'email' : ['AIRFLOW_ALERT_EMAIL', ''],
+      After:
+          'email' : [os.getenv('AIRFLOW_ALERT_EMAIL', '')],
+
+      The previous value was a hardcoded string literal, not
+      an environment-variable lookup. Airflow would have tried
+      to send alerts to the literal address "AIRFLOW_ALERT_EMAIL".
+
+   b) Lines 141-160 - task_validate_pipeline
+      Before:
+          - MSSQL fallback host: 'localhost,1434'
+          - MySQL host hardcoded: 'localhost:3307'
+      After:
+          - MSSQL host/port read from MSSQL_HOST / MSSQL_PORT env,
+            defaulting to 'project101_sqlserver:1433'
+          - MySQL host/port read from MYSQL_HOST / MYSQL_PORT env,
+            defaulting to 'project101_mysql:3306'
+
+      Reason: inside the Airflow container, 'localhost' resolves
+      to the Airflow container itself - not to SQL Server or MySQL.
+      The published ports (1434, 3307) only exist on the host
+      machine. Container-to-container traffic must use the
+      docker-compose service names on their internal ports.
+
+      This mirrors the same fix already applied to load.py in
+      commit 34362e4.
+
+
+3. docker-compose.yml
+   ------------------
+   Lines 80-85 - airflow service depends_on
+
+   Before:
+       depends_on:
+         mysql:
+           condition: service_healthy
+
+   After:
+       depends_on:
+         mysql:
+           condition: service_healthy
+         sqlserver:
+           condition: service_started
+
+   Reason: Airflow was only waiting for MySQL before starting.
+   On a cold `docker compose up`, SQL Server might not be
+   accepting connections yet when the first scheduled DAG run
+   fires. Adding the dependency removes that race condition.
+   (service_started rather than service_healthy because the
+   MSSQL image in use does not define a healthcheck.)
+
+
+============================================
+FILES CHANGED
+============================================
+  modified:   pipeline/load.py
+  modified:   dags/etl_pipeline.py
+  modified:   docker-compose.yml
+  added:      docs/CHANGES_2026-04-18.txt   (this file)
+
+
+============================================
+VERIFICATION CHECKLIST
+============================================
+After pulling these changes:
+
+  [ ] docker compose down && docker compose up -d
+  [ ] Wait ~30s for SQL Server to finish booting
+  [ ] Run the schema (see MANUAL STEP above) - one time only
+  [ ] Open Airflow UI at http://localhost:8080
+  [ ] Un-pause `project101_etl_pipeline`
+  [ ] Trigger a manual run
+  [ ] Confirm all tasks go green, especially:
+        - load_to_sqlserver
+        - validate_pipeline
