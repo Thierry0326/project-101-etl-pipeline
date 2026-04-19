@@ -145,6 +145,23 @@ def download_survey_data() -> bool:
                 size = f.write(chunk)
                 progress.update(size)
 
+        downloaded_size = os.path.getsize(ZIP_PATH)
+        if total_size > 0 and downloaded_size < total_size:
+            os.remove(ZIP_PATH)
+            raise IOError(
+                f"Short download: got {downloaded_size:,} of "
+                f"{total_size:,} bytes. Network interrupted - "
+                f"will retry on next task attempt."
+            )
+
+        import zipfile
+        if not zipfile.is_zipfile(ZIP_PATH):
+            os.remove(ZIP_PATH)
+            raise IOError(
+                "Downloaded file is not a valid ZIP archive - "
+                "likely corrupted mid-transfer."
+            )
+
         logger.info("✅ Download complete!")
         extract_zip()
         return True
