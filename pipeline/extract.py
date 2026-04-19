@@ -59,13 +59,17 @@ def extract_zip():
     os.remove(ZIP_PATH)
     logger.info("✅ ZIP extracted and cleaned up!")
 
+DOWNLOAD_MARKER = "data/raw/.last_download_meta.json"
+
+
 def check_for_updates(url: str, local_path: str) -> bool:
     """
-    Check if remote file has been updated
-    compared to our local copy.
-    Returns True if download needed, False if local is current.
+    Returns True if download is needed, False if local is current.
+
+    Compares remote Last-Modified against a marker written after the
+    previous successful download. The local CSV size can't be compared
+    directly against the remote ZIP size - they are different artifacts.
     """
-    # If no local file exists, definitely download
     if not os.path.exists(local_path):
         logger.info("📥 No local file found - download required")
         return True
@@ -73,33 +77,31 @@ def check_for_updates(url: str, local_path: str) -> bool:
     logger.info("🔍 Checking for updates on remote source...")
 
     try:
-        # Check remote file headers WITHOUT downloading
         response = requests.head(url, timeout=30, allow_redirects=True)
         response.raise_for_status()
-
-        # Get remote file details from headers
-        remote_size     = int(response.headers.get('content-length', 0))
         remote_modified = response.headers.get('last-modified', '')
 
-        # Get local file details
-        local_size     = os.path.getsize(local_path)
-        local_modified = datetime.fromtimestamp(
-                            os.path.getmtime(local_path)
-                         ).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        last_modified_seen = ''
+        if os.path.exists(DOWNLOAD_MARKER):
+            with open(DOWNLOAD_MARKER, 'r') as f:
+                last_modified_seen = json.load(f).get('last_modified', '')
 
-        logger.info(f"📡 Remote → Size: {remote_size/1024**2:.2f}MB | Modified: {remote_modified}")
-        logger.info(f"💾 Local  → Size: {local_size/1024**2:.2f}MB  | Modified: {local_modified}")
+        logger.info(f"📡 Remote Last-Modified: {remote_modified}")
+        logger.info(f"💾 Local  Last-Modified: {last_modified_seen or '(no marker)'}")
 
-        # Compare size and modified date
-        size_changed     = remote_size != local_size and remote_size > 0
-        date_changed     = remote_modified != '' and remote_modified != local_modified
-
-        if size_changed or date_changed:
-            logger.info("🆕 Update detected! Re-downloading...")
-            return True
-        else:
+        if remote_modified and remote_modified == last_modified_seen:
             logger.info("✅ Local file is up to date - skipping download")
             return False
+
+        if not last_modified_seen:
+            logger.info("ℹ️ No marker file - trusting local CSV and writing marker")
+            os.makedirs(os.path.dirname(DOWNLOAD_MARKER), exist_ok=True)
+            with open(DOWNLOAD_MARKER, 'w') as f:
+                json.dump({'last_modified': remote_modified}, f)
+            return False
+
+        logger.info("🆕 Update detected! Re-downloading...")
+        return True
 
     except requests.exceptions.ConnectionError:
         logger.warning("⚠️ No internet - using local file")
@@ -164,6 +166,11 @@ def download_survey_data() -> bool:
 
         logger.info("✅ Download complete!")
         extract_zip()
+
+        remote_modified = response.headers.get('last-modified', '')
+        with open(DOWNLOAD_MARKER, 'w') as f:
+            json.dump({'last_modified': remote_modified}, f)
+
         return True
 
     except requests.exceptions.ConnectionError:

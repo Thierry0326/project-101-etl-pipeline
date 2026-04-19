@@ -62,16 +62,16 @@ def task_extract(**context):
 def task_load_sqlserver(**context):
     """
     Task 2: Load to SQL Server (Bronze)
-    Loads raw data into SQL Server staging table
+    Reads the CSV extracted upstream and loads it into SQL Server.
     """
     import sys
     sys.path.insert(0, '/opt/airflow/dags/../pipeline')
 
-    from extract import run_extraction
+    from extract import extract_survey_data, RAW_DATA_PATH
     from load import run_load
 
     logger.info("🚀 Starting Load to SQL Server task...")
-    df = run_extraction()
+    df = extract_survey_data(RAW_DATA_PATH)
     run_load(df)
 
     logger.info("✅ Load to SQL Server complete!")
@@ -101,20 +101,18 @@ def task_transform(**context):
 def task_load_mysql(**context):
     """
     Task 4: Load to MySQL (Silver & Gold)
-    Loads transformed data into MySQL
+    Re-runs transform (reads from SQL Server) and loads the result
+    into MySQL. Upstream extract/load to SQL Server already ran in
+    earlier tasks - do not repeat them here.
     """
     import sys
     sys.path.insert(0, '/opt/airflow/dags/../pipeline')
 
-    from extract import run_extraction
-    from load import run_load
     from transform import run_transform
     from load_mysql import run_mysql_load
 
     logger.info("🚀 Starting Load to MySQL task...")
-    df           = run_extraction()
-    run_load(df)
-    transformed  = run_transform()
+    transformed = run_transform()
     run_mysql_load(transformed)
 
     logger.info("✅ Load to MySQL complete!")
