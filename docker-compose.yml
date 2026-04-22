@@ -34,6 +34,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql/mysql_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
     networks:
       - project101_network
     restart: unless-stopped
