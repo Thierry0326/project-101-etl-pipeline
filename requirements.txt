@@ -1,37 +1,64 @@
 # ============================================
 # PROJECT 101 - ETL PIPELINE
-# Python Dependencies
+# Python Dependencies (requires Python 3.11 or 3.12)
 # ============================================
 
 # Data Manipulation & Processing
+# Pandas 3.x requires Python 3.11+ and has API breaks;
+# staying on 2.2.x for stability with Airflow 2.11.
 pandas>=2.2,<2.3
-numpy>=1.26.0
+numpy>=1.26,<2.3
 
 # Database Connectors
-sqlalchemy==2.0.25
-pymssql==2.2.11
-# mysql-connector-python==8.3.0
-pyodbc==5.1.0
+# Airflow 2.11 is pinned to SQLAlchemy 1.4.x;
+# do not jump to SQLAlchemy 2.x on this Airflow line.
+sqlalchemy>=1.4.54,<2.0
+pymssql==2.3.13
+pyodbc==5.3.0
+PyMySQL==1.1.2
+# mysql-connector-python 9.6.0 is latest but requires Python 3.10+;
+# enable only if you need the Oracle connector specifically.
+# mysql-connector-python==9.6.0
 
 # Data Validation
-great-expectations==0.18.8
+# Great Expectations 1.x is a major rewrite with breaking API changes.
+# Staying on 0.18.x line until expectations/ code is migrated.
+great-expectations==0.18.22
 
 # Pipeline Orchestration
-apache-airflow==2.8.1
+# 2.11.1 is latest 2.x LTS. Airflow 3.2.1 exists but requires
+# DAG code changes - see notes at bottom of file.
+apache-airflow==2.11.1
 
 # Environment Variables
-python-dotenv==1.0.0
+python-dotenv==1.1.0
 
-# Data Source (CSV handling)
-openpyxl==3.1.2
+# Data Source (CSV / Excel handling)
+openpyxl==3.1.5
 
 # Testing
-pytest==7.4.4
-pytest-cov==4.1.0
+# pytest 9.x just dropped; 8.3.x has the broadest plugin support.
+pytest==8.3.5
+pytest-cov==5.0.0
 
 # Logging & Monitoring
-loguru==0.7.2
+loguru==0.7.3
 
 # Utilities
-tqdm==4.66.1
+tqdm==4.67.3
 colorama==0.4.6
+
+# ============================================
+# NOTES ON UPGRADING TO AIRFLOW 3.x (future)
+# ============================================
+# The latest Airflow is 3.2.1. To migrate, you will need:
+#   1. Python 3.10+ base image
+#   2. DAG code changes:
+#      - Remove 'from airflow.utils.dates import days_ago'
+#        (use pendulum.today('UTC').add(days=-1) instead)
+#      - Rename 'schedule_interval' kwarg to 'schedule'
+#      - Add 'apache-airflow-providers-standard' for
+#        PythonOperator / EmptyOperator imports
+#   3. Bump SQLAlchemy to >=2.0 and audit engine.connect() usage
+#   4. Migrate great-expectations to 1.16.x API
+# Not worth doing until the current pipeline is stable.

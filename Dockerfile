@@ -4,7 +4,7 @@
 # Python dependencies pre-installed
 # ============================================
 
-FROM apache/airflow:2.8.1
+FROM apache/airflow:2.11.1-python3.12
 
 USER root
 
@@ -24,15 +24,16 @@ USER airflow
 # Copy requirements file into container
 COPY requirements.txt .
 
-# Install Python dependencies inside container
-# This means Airflow DAGs can import pandas,
-# sqlalchemy, pymssql etc without issues!
+# Install Python dependencies inside container.
+# Pins match requirements.txt so DAGs import the same versions
+# whether running in Airflow or locally.
 RUN pip install --no-cache-dir \
-    "sqlalchemy==1.4.50" \
-    "pandas==2.0.3" \
-    PyMySQL \
-    pymssql==2.2.11 \
-    python-dotenv==1.0.0 \
+    "sqlalchemy>=1.4.54,<2.0" \
+    "pandas>=2.2,<2.3" \
+    "numpy>=1.26,<2.3" \
+    PyMySQL==1.1.2 \
+    pymssql==2.3.13 \
+    python-dotenv==1.1.0 \
     requests \
-    tqdm==4.66.1 \
-    loguru==0.7.2
+    tqdm==4.67.3 \
+    loguru==0.7.3
