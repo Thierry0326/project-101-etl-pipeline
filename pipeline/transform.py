@@ -87,7 +87,8 @@ def extract_from_sqlserver(engine) -> pd.DataFrame:
     query = "SELECT * FROM dbo.survey_responses_raw"
 
     try:
-        df = pd.read_sql(query, engine)
+        with engine.connect() as conn:
+            df = pd.read_sql(query, conn)
         logger.info(f"✅ Extracted {len(df):,} rows from SQL Server")
         return df
 
@@ -408,6 +409,10 @@ def build_fact_table(
     fact['career_satisfaction_score'] = fact['career_satisfaction'].map(
         satisfaction_map
     )
+
+    # Drop the raw text columns - the fact table only stores
+    # the numeric scores; text labels have no column in MySQL.
+    fact = fact.drop(columns=['job_satisfaction', 'career_satisfaction'])
 
     # Join compensation
     fact = fact.merge(

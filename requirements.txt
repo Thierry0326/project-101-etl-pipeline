@@ -4,14 +4,17 @@
 # ============================================
 
 # Data Manipulation & Processing
-# Pandas 3.x requires Python 3.11+ and has API breaks;
-# staying on 2.2.x for stability with Airflow 2.11.
-pandas>=2.2,<2.3
+# Pandas 2.1.x is the last line that supports SQLAlchemy 1.4
+# (pandas 2.2 silently breaks pd.read_sql(engine) when SQLA<2.0).
+# Airflow 2.11 hard-pins SQLA<2.0 via flask-appbuilder, so we
+# cannot bump SQLA - we must stay on pandas 2.1.x.
+pandas>=2.1,<2.2
 numpy>=1.26,<2.3
 
 # Database Connectors
-# Airflow 2.11 is pinned to SQLAlchemy 1.4.x;
-# do not jump to SQLAlchemy 2.x on this Airflow line.
+# Airflow 2.11.1 hard-pins SQLAlchemy<2.0 (via flask-appbuilder<1.5
+# and apache-airflow itself). The webserver crashes with
+# MappedAnnotationError if SQLA 2.0 is installed.
 sqlalchemy>=1.4.54,<2.0
 pymssql==2.3.13
 pyodbc==5.3.0

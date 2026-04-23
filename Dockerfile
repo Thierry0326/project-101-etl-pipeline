@@ -29,7 +29,7 @@ COPY requirements.txt .
 # whether running in Airflow or locally.
 RUN pip install --no-cache-dir \
     "sqlalchemy>=1.4.54,<2.0" \
-    "pandas>=2.2,<2.3" \
+    "pandas>=2.1,<2.2" \
     "numpy>=1.26,<2.3" \
     PyMySQL==1.1.2 \
     pymssql==2.3.13 \

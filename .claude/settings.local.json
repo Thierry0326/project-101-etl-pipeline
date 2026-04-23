@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"/c/Program Files/Docker/Docker/resources/bin/docker.exe\" ps --format \"table {{.Names}}\\\\t{{.Status}}\")"
+      "Bash(\"/c/Program Files/Docker/Docker/resources/bin/docker.exe\" ps --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash('/c/Program Files/Docker/Docker/resources/bin/docker.exe' compose -f d:/py/project-101-etl-pipeline/docker-compose.yml exec -T airflow bash -c 'airflow dags list 2>&1 | tail -10; echo '\\\\''---PROCS---'\\\\''; ls /proc/ | grep -E '\\\\''^[0-9]'\\\\'' | while read pid; do cat /proc/$pid/cmdline 2>/dev/null | tr '\\\\''\\\\0'\\\\'' '\\\\'' '\\\\''; echo; done | head -30')",
+      "Bash('/c/Program Files/Docker/Docker/resources/bin/docker.exe' compose -f d:/py/project-101-etl-pipeline/docker-compose.yml exec -T airflow-scheduler python -c ' *)",
+      "Bash(\"/c/Program Files/Docker/Docker/resources/bin/docker.exe\" exec project101_sqlserver //opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Pro101Mssql123' -C -h -1 -W -Q \"SELECT TOP 5 LogDate, SUBSTRING\\(Text, 1, 200\\) FROM \\(SELECT * FROM sys.xp_readerrorlog\\(0, 1, N'Login failed', NULL, NULL, NULL\\)\\) x ORDER BY LogDate DESC;\")",
+      "Bash(\"/c/Program Files/Docker/Docker/resources/bin/docker.exe\" exec project101_sqlserver tail -50 /var/opt/mssql/log/errorlog)"
     ]
   }
 }
