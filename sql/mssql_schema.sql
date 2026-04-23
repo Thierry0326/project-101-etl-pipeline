@@ -35,18 +35,18 @@ CREATE TABLE dbo.survey_responses_raw (
 
     -- Demographics
     age             NVARCHAR(50),
-    gender          NVARCHAR(255),
+    gender          NVARCHAR(MAX),
     country         NVARCHAR(255),
-    ethnicity       NVARCHAR(500),
-    
+    ethnicity       NVARCHAR(MAX),
+
     -- Education
     ed_level        NVARCHAR(255),
     undergraduate_major NVARCHAR(255),
 
     -- Employment
-    employment      NVARCHAR(255),
+    employment      NVARCHAR(MAX),
     org_size        NVARCHAR(255),
-    dev_type        NVARCHAR(500),
+    dev_type        NVARCHAR(MAX),
     years_code      NVARCHAR(50),
     years_code_pro  NVARCHAR(50),
 
