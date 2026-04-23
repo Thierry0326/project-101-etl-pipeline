@@ -108,10 +108,14 @@ def load_dataframe(
     total_batches = (total_rows // BATCH_SIZE) + 1
     FAILURE_THRESHOLD_PCT = 5.0
 
-    # Truncate table before loading
+    # Truncate table before loading. Disable FK checks so we can
+    # truncate parent tables that are referenced by child tables -
+    # child tables will be truncated on their own iteration.
     if truncate_first:
         with engine.begin() as conn:
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
             conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
         logger.info(f"🗑️  Truncated {table_name}")
 
     logger.info(f"📥 Loading {table_name}...")
