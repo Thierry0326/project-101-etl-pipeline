@@ -103,24 +103,21 @@ def load_dataframe(
 
     total_rows    = len(df)
     loaded_rows   = 0
+    failed_rows   = 0
+    first_error   = None
     total_batches = (total_rows // BATCH_SIZE) + 1
+    FAILURE_THRESHOLD_PCT = 5.0
 
     # Truncate table before loading
     if truncate_first:
-        try:
-            with engine.begin() as conn:
-                conn.execute(text(f"TRUNCATE TABLE {table_name}"))
-            logger.info(f"🗑️  Truncated {table_name}")
-        except Exception as e:
-            logger.warning(f"⚠️ Could not truncate {table_name}: {str(e)}")
+        with engine.begin() as conn:
+            conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+        logger.info(f"🗑️  Truncated {table_name}")
 
     logger.info(f"📥 Loading {table_name}...")
     logger.info(f"   Rows: {total_rows:,} | Batches: {total_batches}")
 
-    # Load in batches
-    for batch_num, start in enumerate(
-        range(0, total_rows, BATCH_SIZE), 1
-    ):
+    for batch_num, start in enumerate(range(0, total_rows, BATCH_SIZE), 1):
         end   = min(start + BATCH_SIZE, total_rows)
         batch = df.iloc[start:end]
 
@@ -134,7 +131,6 @@ def load_dataframe(
             )
             loaded_rows += len(batch)
 
-            # Log progress every 10 batches
             if batch_num % 10 == 0 or batch_num == total_batches:
                 progress = (loaded_rows / total_rows * 100)
                 logger.info(
@@ -144,8 +140,26 @@ def load_dataframe(
                 )
 
         except Exception as e:
+            failed_rows += len(batch)
+            if first_error is None:
+                first_error = e
             logger.warning(f"⚠️ Batch {batch_num} failed: {str(e)}")
-            continue
+
+    failure_pct = (failed_rows / total_rows * 100) if total_rows else 0
+
+    if loaded_rows == 0 and total_rows > 0:
+        raise RuntimeError(
+            f"Load of {table_name} failed: 0 of {total_rows:,} rows "
+            f"persisted. First batch error: {first_error}"
+        )
+
+    if failure_pct > FAILURE_THRESHOLD_PCT:
+        raise RuntimeError(
+            f"Load of {table_name} failed: {failed_rows:,} of "
+            f"{total_rows:,} rows ({failure_pct:.1f}%) failed, "
+            f"exceeding {FAILURE_THRESHOLD_PCT}% threshold. "
+            f"First batch error: {first_error}"
+        )
 
     logger.info(f"✅ {table_name} loaded: {loaded_rows:,} rows")
     return loaded_rows

@@ -182,62 +182,71 @@ def load_to_sqlserver(df: pd.DataFrame, engine) -> bool:
     total_rows   = len(df)
     loaded_rows  = 0
     failed_rows  = 0
+    first_error  = None
     total_batches = (total_rows // BATCH_SIZE) + 1
+    FAILURE_THRESHOLD_PCT = 5.0  # >5% of batches failing = task fails
 
     logger.info("🚀 Starting load to SQL Server...")
     logger.info(f"📊 Total rows    : {total_rows:,}")
     logger.info(f"📦 Batch size    : {BATCH_SIZE:,}")
     logger.info(f"📦 Total batches : {total_batches:,}")
 
-    try:
-        # Split DataFrame into batches
-        for batch_num, start in enumerate(
-            range(0, total_rows, BATCH_SIZE), 1
-        ):
-            end   = min(start + BATCH_SIZE, total_rows)
-            batch = df.iloc[start:end]
+    for batch_num, start in enumerate(range(0, total_rows, BATCH_SIZE), 1):
+        end   = min(start + BATCH_SIZE, total_rows)
+        batch = df.iloc[start:end]
 
-            try:
-                batch.to_sql(
-                    name      = 'survey_responses_raw',
-                    con       = engine,
-                    schema    = 'dbo',
-                    if_exists = 'append',   # Always append to existing table
-                    index     = False,      # Don't write DataFrame index
-                    method    = 'multi'     # Faster multi-row insert
+        try:
+            batch.to_sql(
+                name      = 'survey_responses_raw',
+                con       = engine,
+                schema    = 'dbo',
+                if_exists = 'append',
+                index     = False,
+                method    = 'multi'
+            )
+
+            loaded_rows += len(batch)
+
+            if batch_num % 10 == 0 or batch_num == total_batches:
+                progress = (loaded_rows / total_rows * 100)
+                logger.info(
+                    f"📦 Batch {batch_num}/{total_batches} | "
+                    f"Loaded: {loaded_rows:,}/{total_rows:,} | "
+                    f"Progress: {progress:.1f}%"
                 )
 
-                loaded_rows += len(batch)
+        except Exception as batch_error:
+            failed_rows += len(batch)
+            if first_error is None:
+                first_error = batch_error
+            logger.warning(
+                f"⚠️ Batch {batch_num} failed: {str(batch_error)}"
+            )
 
-                # Log progress every 10 batches
-                if batch_num % 10 == 0 or batch_num == total_batches:
-                    progress = (loaded_rows / total_rows * 100)
-                    logger.info(
-                        f"📦 Batch {batch_num}/{total_batches} | "
-                        f"Loaded: {loaded_rows:,}/{total_rows:,} | "
-                        f"Progress: {progress:.1f}%"
-                    )
+    failure_pct = (failed_rows / total_rows * 100) if total_rows else 0
 
-            except Exception as batch_error:
-                failed_rows += len(batch)
-                logger.warning(
-                    f"⚠️ Batch {batch_num} failed: {str(batch_error)}"
-                )
-                continue
+    logger.info("=" * 50)
+    logger.info(f"📊 Successfully loaded : {loaded_rows:,} rows")
+    logger.info(f"📊 Failed rows         : {failed_rows:,}")
+    logger.info(f"📊 Success rate        : {100 - failure_pct:.1f}%")
+    logger.info("=" * 50)
 
-        # Final summary
-        logger.info("=" * 50)
-        logger.info("✅ Load complete!")
-        logger.info(f"📊 Successfully loaded : {loaded_rows:,} rows")
-        logger.info(f"📊 Failed rows         : {failed_rows:,}")
-        logger.info(f"📊 Success rate        : {(loaded_rows/total_rows*100):.1f}%")
-        logger.info("=" * 50)
+    if loaded_rows == 0 and total_rows > 0:
+        raise RuntimeError(
+            f"Load failed: 0 of {total_rows:,} rows persisted. "
+            f"First batch error: {first_error}"
+        )
 
-        return True
+    if failure_pct > FAILURE_THRESHOLD_PCT:
+        raise RuntimeError(
+            f"Load failed: {failed_rows:,} of {total_rows:,} rows "
+            f"({failure_pct:.1f}%) failed, exceeding "
+            f"{FAILURE_THRESHOLD_PCT}% threshold. "
+            f"First batch error: {first_error}"
+        )
 
-    except Exception as e:
-        logger.error(f"❌ Load failed: {str(e)}")
-        raise
+    logger.info("✅ Load complete!")
+    return True
 
 
 def verify_load(engine, expected_rows: int) -> bool:
